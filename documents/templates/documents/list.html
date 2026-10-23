@@ -1,0 +1,9 @@
+<h1>My Documents</h1>
+<ul>
+  {% for doc in documents %}
+    <li><a href="{% url 'document_detail' doc.id %}">{{ doc.title }}</a></li>
+  {% empty %}
+    <li>You have no documents.</li>
+  {% endfor %}
+</ul>
+<a href="/admin/">Admin</a> <!-- Admin link for quick check -->
