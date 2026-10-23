@@ -1,0 +1,8 @@
+<h1>Delete Document</h1>
+<p>Are you sure you want to delete "{{ document.title }}"?</p>
+
+<form method="post">
+  {% csrf_token %}
+  <button type="submit">Yes, delete</button>
+  <a href="{% url 'document_detail' document.id %}">Cancel</a>
+</form>
