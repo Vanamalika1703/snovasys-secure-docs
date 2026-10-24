@@ -28,9 +28,12 @@ if not SECRET_KEY:
     raise ValueError("DJANGO_SECRET_KEY is missing from the .env file")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = []
+DEBUG = os.getenv("DJANGO_DEBUG", "False").lower() == "true"
+ALLOWED_HOSTS = [
+    "snovasys-secure-docs.onrender.com",
+    "localhost",
+    "127.0.0.1",
+]
 
 
 # Application definition
