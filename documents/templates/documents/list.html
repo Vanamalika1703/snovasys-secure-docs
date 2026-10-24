@@ -1,9 +1,453 @@
-<h1>My Documents</h1>
-<ul>
-  {% for doc in documents %}
-    <li><a href="{% url 'document_detail' doc.id %}">{{ doc.title }}</a></li>
-  {% empty %}
-    <li>You have no documents.</li>
-  {% endfor %}
-</ul>
-<a href="/admin/">Admin</a> <!-- Admin link for quick check -->
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Snovasys Secure Docs</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f7fb;
+            color: #202b3c;
+        }
+
+        .navbar {
+            min-height: 68px;
+            padding: 0 5%;
+            background: #102b35;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .brand {
+            font-size: 22px;
+            font-weight: bold;
+            color: #5eead4;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 22px;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            color: #e5edf2;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .nav-links a:hover {
+            color: #5eead4;
+        }
+
+        .user-label {
+            color: #a7f3d0;
+            font-size: 13px;
+        }
+
+        .container {
+            max-width: 1450px;
+            margin: 0 auto;
+            padding: 32px 5%;
+        }
+
+        .heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 28px;
+        }
+
+        h1 {
+            margin: 0 0 8px;
+            font-size: 30px;
+        }
+
+        .subtitle {
+            margin: 0;
+            color: #6b7789;
+        }
+
+        .button {
+            display: inline-block;
+            border: none;
+            border-radius: 7px;
+            padding: 12px 17px;
+            background: #087ca7;
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .button:hover {
+            background: #06658a;
+        }
+
+        .button-light {
+            background: #e8eef5;
+            color: #24364b;
+        }
+
+        .button-danger {
+            background: #b42332;
+            padding: 8px 11px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 18px;
+            margin-bottom: 28px;
+        }
+
+        .stat-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-top: 4px solid #087ca7;
+            border-radius: 10px;
+            padding: 23px;
+            box-shadow: 0 3px 12px rgba(20, 40, 70, .04);
+        }
+
+        .stat-card:nth-child(2) {
+            border-top-color: #10a783;
+        }
+
+        .stat-card:nth-child(3) {
+            border-top-color: #52764b;
+        }
+
+        .stat-label {
+            color: #657287;
+            font-size: 13px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: .4px;
+        }
+
+        .stat-number {
+            font-size: 34px;
+            font-weight: bold;
+            margin-top: 12px;
+            color: #087ca7;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.7fr) minmax(280px, 1fr);
+            gap: 22px;
+            align-items: start;
+        }
+
+        .panel {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 22px;
+            box-shadow: 0 3px 12px rgba(20, 40, 70, .04);
+            min-width: 0;
+        }
+
+        .panel-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        h2 {
+            margin: 0;
+            font-size: 19px;
+        }
+
+        .search {
+            width: 100%;
+            padding: 11px 13px;
+            border: 1px solid #d5deea;
+            border-radius: 7px;
+            margin-bottom: 17px;
+            font-size: 14px;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th, td {
+            padding: 15px 10px;
+            border-bottom: 1px solid #edf0f5;
+            font-size: 13px;
+        }
+
+        th {
+            color: #657287;
+            background: #f8fafc;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        td a {
+            color: #087ca7;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #dff7ef;
+            color: #08785e;
+            padding: 5px 9px;
+            border-radius: 15px;
+            font-size: 12px;
+        }
+
+        .activity {
+            padding: 15px 0;
+            border-bottom: 1px solid #edf0f5;
+            overflow-wrap: anywhere;
+        }
+
+        .activity:last-child {
+            border-bottom: none;
+        }
+
+        .success {
+            display: inline-block;
+            background: #d8f7e7;
+            color: #087443;
+            border-radius: 5px;
+            padding: 4px 8px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .activity p {
+            margin: 8px 0;
+            font-size: 13px;
+        }
+
+        .muted {
+            color: #7b8797;
+            font-size: 12px;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 30px 10px;
+            color: #6b7789;
+        }
+
+        .row-actions {
+            display: flex;
+            gap: 9px;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 900px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .navbar {
+                padding: 18px 5%;
+            }
+
+            .nav-links {
+                gap: 14px;
+            }
+
+            .container {
+                padding-top: 22px;
+            }
+
+            h1 {
+                font-size: 25px;
+            }
+
+            .panel {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="navbar">
+        <div class="brand">◆ Snovasys Secure Docs</div>
+
+        <nav class="nav-links">
+            <a href="{% url 'my_documents' %}">Dashboard</a>
+            <a href="{% url 'my_documents' %}">Documents</a>
+            <a href="{% url 'create_document' %}">＋ Create Document</a>
+            <a href="/admin/">Admin</a>
+            <span class="user-label">{{ request.user.username }}</span>
+            <a href="{% url 'logout' %}">Logout</a>
+        </nav>
+    </header>
+
+    <main class="container">
+        <section class="heading">
+            <div>
+                <h1>Enterprise Vault Dashboard</h1>
+                <p class="subtitle">
+                    Overview of your documents and security activity.
+                </p>
+            </div>
+
+            <a class="button" href="{% url 'create_document' %}">
+                + Create Document
+            </a>
+        </section>
+
+        <section class="stats">
+            <div class="stat-card">
+                <div class="stat-label">Owned by You</div>
+                <div class="stat-number">{{ total_documents }}</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-label">Shared With You</div>
+                <div class="stat-number">0</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-label">Total Accessible</div>
+                <div class="stat-number">{{ total_documents }}</div>
+            </div>
+        </section>
+
+        <section class="main-grid">
+            <div class="panel">
+                <div class="panel-heading">
+                    <h2>Accessible Documents</h2>
+                    <span class="muted">{{ total_documents }} documents</span>
+                </div>
+
+                <input
+                    class="search"
+                    type="search"
+                    id="documentSearch"
+                    placeholder="Search documents by title..."
+                    aria-label="Search documents"
+                >
+
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Created</th>
+                                <th>Access</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="documentRows">
+                            {% for doc in documents %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'document_detail' doc.id %}">
+                                        {{ doc.title }}
+                                    </a>
+                                </td>
+                                <td>{{ doc.created_at|date:"M d, Y" }}</td>
+                                <td><span class="badge">Owner</span></td>
+                                <td>
+                                    <div class="row-actions">
+                                        <a href="{% url 'document_detail' doc.id %}">View</a>
+                                        <a href="{% url 'edit_document' doc.id %}">Edit</a>
+                                        <form method="post" action="{% url 'delete_document' doc.id %}">
+                                            {% csrf_token %}
+                                            <button class="button button-danger" type="submit">
+                                                Delete
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="empty">
+                                    No documents yet. Create your first document to get started.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <aside class="panel">
+                <div class="panel-heading">
+                    <h2>Recent Security Activity</h2>
+                </div>
+
+                {% for log in recent_logs %}
+                <div class="activity">
+                    <span class="success">RECORDED</span>
+                    <p><strong>{{ log.user.username }}</strong>: {{ log.get_action_display }}</p>
+                    <p>
+                        Document:
+                        {% if log.document %}
+                            {{ log.document.title }}
+                        {% else %}
+                            Deleted or unavailable document
+                        {% endif %}
+                    </p>
+                    {% if log.details %}
+                        <p>{{ log.details }}</p>
+                    {% endif %}
+                    <span class="muted">{{ log.timestamp|date:"M d, Y H:i" }}</span>
+                </div>
+                {% empty %}
+                <p class="empty">No recent activity to display.</p>
+                {% endfor %}
+            </aside>
+        </section>
+    </main>
+
+    <script>
+        const searchInput = document.getElementById("documentSearch");
+        const documentRows = document.querySelectorAll("#documentRows tr");
+
+        searchInput.addEventListener("input", function () {
+            const query = this.value.toLowerCase();
+
+            documentRows.forEach(function (row) {
+                const title = row.cells[0]?.innerText.toLowerCase() || "";
+                row.style.display = title.includes(query) ? "" : "none";
+            });
+        });
+    </script>
+</body>
+</html>
+```

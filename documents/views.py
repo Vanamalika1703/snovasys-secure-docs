@@ -10,8 +10,20 @@ from django.shortcuts import redirect
 
 @login_required
 def my_documents(request):
-    docs = Document.objects.filter(owner=request.user)
-    return render(request, 'documents/list.html', {'documents': docs})
+    docs = Document.objects.filter(owner=request.user).order_by('-created_at')
+
+    recent_logs = AuditLog.objects.filter(
+        user=request.user
+    ).select_related('document').order_by('-timestamp')[:5]
+
+    context = {
+        'documents': docs,
+        'total_documents': docs.count(),
+        'recent_logs': recent_logs,
+    }
+
+    return render(request, 'documents/list.html', context)
+   
 @login_required
 def document_detail(request, doc_id):
     doc = get_object_or_404(Document, id=doc_id)
@@ -27,8 +39,12 @@ from django.shortcuts import redirect
 @login_required
 def create_document(request):
     if request.method == 'POST':
-        title = request.POST.get('title')
-        content = request.POST.get('content')
+        title = request.POST.get('title', '').strip()
+        content = request.POST.get('content', '').strip()
+        if not title or not content:
+            return render(request, 'documents/create.html', {
+                'error': 'Both title and content are required.',
+            })
         doc = Document.objects.create(owner=request.user, title=title, content=content)
         AuditLog.objects.create(user=request.user, document=doc, action='create')
         return redirect('my_documents')
